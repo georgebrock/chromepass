@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import json
+import re
 import struct
+import subprocess
 import sys
 
 
@@ -41,10 +43,65 @@ class ChromeNativeMessaging(object):
         sys.stdout.flush()
 
 
+class Password(object):
+    """
+    Represents an entry in the password store. The entry will be lazily
+    decrypted when the ``password`` or ``extra_info`` properties are
+    accessed.
+    """
+
+    @classmethod
+    def for_domain(cls, domain):
+        return cls('www/{0}'.format(domain))
+
+    def __init__(self, name):
+        self.name = name
+
+    @property
+    def password(self):
+        """
+        Returns the password, assumed to be the first line of the password
+        file.
+        """
+
+        return self.decrypted_lines[0]
+
+    @property
+    def extra_info(self):
+        """
+        Returns a dict of extra information in the password file, assumed to
+        consist of colon separated key/value pairs on every line but the first.
+
+        e.g. the line ``'foo: bar'`` would result in the
+        dict ``{'foo': 'bar'}``
+        """
+
+        separator = re.compile(r':\s+')
+        return dict([
+            separator.split(line, maxsplit=2)
+            for line in self.decrypted_lines[1:]
+            if len(line) > 0
+        ])
+
+    @property
+    def decrypted_lines(self):
+        if not hasattr(self, '_decrypted_lines'):
+            output = subprocess.check_output(['pass', self.name])
+            self._decrypted_lines = output.splitlines()
+
+        return self._decrypted_lines
+
+
 chrome = ChromeNativeMessaging()
 while True:
     try:
         message = chrome.read()
-        chrome.write({'text': 'Message was %r' % message['text']})
+        domain = message['domain']
+        password = Password.for_domain(domain)
+        chrome.write({
+            'name': password.name,
+            'password': password.password,
+            'extra': password.extra_info,
+        })
     except ChromeNativeMessaging.ConnectionClosed:
         sys.exit(0)

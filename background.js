@@ -1,12 +1,10 @@
 chrome.browserAction.onClicked.addListener(function () {
   var port = chrome.runtime.connectNative("org.passwordstore.pass");
   port.onMessage.addListener(function (msg) {
-    console.log("Received: " + msg.text);
+    console.log("Received: " + JSON.stringify(msg));
   });
   port.onDisconnect.addListener(function () {
     console.log("Disconnected");
   });
-  port.postMessage({"text": "first"});
-  port.postMessage({"text": "second"});
-  setTimeout(function () { port.disconnect(); }, 500);
+  port.postMessage({"domain": "zazzle.se"});
 });
