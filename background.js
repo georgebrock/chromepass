@@ -6,5 +6,7 @@ chrome.browserAction.onClicked.addListener(function () {
   port.onDisconnect.addListener(function () {
     console.log("Disconnected");
   });
-  port.postMessage({"text": "ls"});
+  port.postMessage({"text": "first"});
+  port.postMessage({"text": "second"});
+  setTimeout(function () { port.disconnect(); }, 500);
 });

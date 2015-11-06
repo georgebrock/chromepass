@@ -12,12 +12,20 @@ class ChromeNativeMessaging(object):
     indicator.
     """
 
+    class ConnectionClosed(Exception):
+        pass
+
     def read(self):
         """
         Reads a message from Google Chrome, and returns it.
+        Can raise a ChromeNativeMessaging.ConnectionClosed exception.
         """
 
         length_bytes = sys.stdin.read(4)
+
+        if len(length_bytes) == 0:
+            raise self.ConnectionClosed()
+
         length = struct.unpack('i', length_bytes)[0]
         message = sys.stdin.read(length).decode('utf-8')
         return json.loads(message)
@@ -30,5 +38,9 @@ class ChromeNativeMessaging(object):
 
 
 chrome = ChromeNativeMessaging()
-message = chrome.read()
-chrome.write({'text': 'Message was %r' % message['text']})
+while True:
+    try:
+        message = chrome.read()
+        chrome.write({'text': 'Message was %r' % message['text']})
+    except ChromeNativeMessaging.ConnectionClosed:
+        sys.exit(0)
