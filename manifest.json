@@ -8,7 +8,8 @@
     "scripts": ["background.js"]
   },
   "browser_action": {
-    "default_title": "pass"
+    "default_title": "pass",
+    "default_popup": "popup.html"
   },
   "permissions": ["nativeMessaging"]
 }
