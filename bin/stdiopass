@@ -123,5 +123,8 @@ if __name__ == '__main__':
         except ChromeNativeMessaging.ConnectionClosed:
             sys.exit(0)
 
-        response = message_handler.handle(message)
-        chrome.write(response)
+        try:
+            response = message_handler.handle(message)
+            chrome.write(response)
+        except Exception as e:
+            chrome.write({"error": repr(e)})
