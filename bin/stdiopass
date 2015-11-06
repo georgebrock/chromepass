@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import os
 import re
 import struct
 import subprocess
@@ -86,7 +87,11 @@ class Password(object):
     @property
     def decrypted_lines(self):
         if not hasattr(self, '_decrypted_lines'):
-            output = subprocess.check_output(['pass', self.name])
+            path = ':'.join(['/usr/local/bin', os.environ['PATH']])
+            output = subprocess.check_output(
+                ['/usr/local/bin/pass', self.name],
+                env={'PATH': path, 'HOME': '/Users/georgebrocklehurst'},
+            )
             self._decrypted_lines = output.splitlines()
 
         return self._decrypted_lines
