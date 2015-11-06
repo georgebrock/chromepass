@@ -5,19 +5,30 @@ import struct
 import sys
 
 
-def read():
-    length_bytes = sys.stdin.read(4)
-    length = struct.unpack('i', length_bytes)[0]
-    message = sys.stdin.read(length).decode('utf-8')
-    return json.loads(message)
+class ChromeNativeMessaging(object):
+    """
+    Reads and writes the Google Chrome native messaging protocol, which
+    sends and recieves UTF-8 encoded JSON prefixed with a 4 byte length
+    indicator.
+    """
+
+    def read(self):
+        """
+        Reads a message from Google Chrome, and returns it.
+        """
+
+        length_bytes = sys.stdin.read(4)
+        length = struct.unpack('i', length_bytes)[0]
+        message = sys.stdin.read(length).decode('utf-8')
+        return json.loads(message)
+
+    def write(self, payload):
+        message = json.dumps(payload)
+        sys.stdout.write(struct.pack('I', len(message)))
+        sys.stdout.write(message)
+        sys.stdout.flush()
 
 
-def write(payload):
-    message = json.dumps(payload)
-    sys.stdout.write(struct.pack('I', len(message)))
-    sys.stdout.write(message)
-    sys.stdout.flush()
-
-
-message = read()
-write({'text': 'Message was %r' % message['text']})
+chrome = ChromeNativeMessaging()
+message = chrome.read()
+chrome.write({'text': 'Message was %r' % message['text']})
