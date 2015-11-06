@@ -31,6 +31,10 @@ class ChromeNativeMessaging(object):
         return json.loads(message)
 
     def write(self, payload):
+        """
+        Serializes the given payload as JSON, and sends it to Google Chrome.
+        """
+
         message = json.dumps(payload)
         sys.stdout.write(struct.pack('I', len(message)))
         sys.stdout.write(message)
