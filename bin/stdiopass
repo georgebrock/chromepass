@@ -92,16 +92,31 @@ class Password(object):
         return self._decrypted_lines
 
 
-chrome = ChromeNativeMessaging()
-while True:
-    try:
-        message = chrome.read()
+class MessageHandler(object):
+    """
+    Converts messages from the browser into responses to send back to the
+    browser.
+    """
+
+    def handle(self, message):
         domain = message['domain']
         password = Password.for_domain(domain)
-        chrome.write({
+        return {
             'name': password.name,
             'password': password.password,
             'extra': password.extra_info,
-        })
-    except ChromeNativeMessaging.ConnectionClosed:
-        sys.exit(0)
+        }
+
+
+if __name__ == '__main__':
+    chrome = ChromeNativeMessaging()
+    message_handler = MessageHandler()
+
+    while True:
+        try:
+            message = chrome.read()
+        except ChromeNativeMessaging.ConnectionClosed:
+            sys.exit(0)
+
+        response = message_handler.handle(message)
+        chrome.write(response)
