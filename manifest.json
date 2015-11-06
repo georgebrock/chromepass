@@ -1,0 +1,14 @@
+{
+  "name": "Chrome Pass",
+  "manifest_version": 2,
+  "version": "0.1",
+  "description": "Fills in passwords",
+  "background": {
+    "persistent": false,
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_title": "pass"
+  },
+  "permissions": ["nativeMessaging"]
+}

@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import json
+import struct
+import sys
+
+
+def read():
+    length_bytes = sys.stdin.read(4)
+    length = struct.unpack('i', length_bytes)[0]
+    message = sys.stdin.read(length).decode('utf-8')
+    return json.loads(message)
+
+
+def write(payload):
+    message = json.dumps(payload)
+    sys.stdout.write(struct.pack('I', len(message)))
+    sys.stdout.write(message)
+    sys.stdout.flush()
+
+
+message = read()
+write({'text': 'Message was %r' % message['text']})
