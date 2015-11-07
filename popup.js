@@ -55,6 +55,17 @@ PasswordCollection.prototype.buildUI = function (element) {
     password.buildUI();
   });
 };
+PasswordCollection.prototype.byName = function (name) {
+  var collection = this;
+  return new Promise(function (resolve, reject) {
+    collection.items.forEach(function (password) {
+      if (password.name == name) {
+        resolve(password);
+      }
+    });
+    reject();
+  });
+};
 PasswordCollection.prototype.filter = function (query) {
   var collection = this;
   this.element.innerHTML = "";
@@ -105,19 +116,25 @@ LoadingIndicator.prototype.stop = function () {
   pass.loadList().then(function (passwords) {
     chrome.tabs.getSelected(function (tab) {
       chrome.tabs.executeScript(tab.id, {"file": "content.js"}, function () {
+        function select(password) {
+          loadingIndicator.start();
+          password.getDetail().then(function (detail) {
+            chrome.tabs.sendMessage(tab.id, {"fill": detail}, function () {
+              window.close();
+            });
+          });
+        }
+
         passwords.buildUI(list);
 
         form.onsubmit = function () {
-          loadingIndicator.start();
+          passwords.firstMatch(input.value).then(select);
+          return false;
+        };
 
-          passwords.firstMatch(input.value).then(function (password) {
-            password.getDetail().then(function (detail) {
-              chrome.tabs.sendMessage(tab.id, {"fill": detail}, function () {
-                window.close();
-              });
-            });
-          });
-
+        list.onclick = function (event) {
+          var name = event.srcElement.getAttribute("data-password");
+          passwords.byName(name).then(select);
           return false;
         };
 

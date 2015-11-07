@@ -20,9 +20,14 @@ input {
   width: 20em;
 }
 #password-options li {
+  cursor: pointer;
   padding: 0 1em;
 }
-#password-options li:first-of-type {
+#password-options:hover li:first-of-type {
+  background: inherit;
+}
+#password-options li:first-of-type,
+#password-options:hover li:hover {
   background: #fee;
 }
 
