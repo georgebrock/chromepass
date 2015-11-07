@@ -19,3 +19,13 @@ input {
   padding: 0 1em;
   width: 20em;
 }
+
+body.loading {
+  background-image: url(loading.gif);
+  background-size: 60px;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+}
+body.loading form {
+  visibility: hidden;
+}

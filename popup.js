@@ -98,6 +98,15 @@ URLParser.prototype.domain = function () {
 };
 
 
+function LoadingIndicator() {}
+LoadingIndicator.prototype.start = function () {
+  document.body.className = "loading";
+};
+LoadingIndicator.prototype.stop = function () {
+  document.body.className = "";
+};
+
+
 (function () {
   var form, input, list, pass;
 
@@ -105,6 +114,7 @@ URLParser.prototype.domain = function () {
   input = document.getElementById("password");
   list = document.getElementById("password-options");
   pass = new Pass();
+  loadingIndicator = new LoadingIndicator();
 
   pass.loadList().then(function (passwords) {
     chrome.tabs.getSelected(function (tab) {
@@ -112,6 +122,8 @@ URLParser.prototype.domain = function () {
         passwords.buildUI(list);
 
         form.onsubmit = function () {
+          loadingIndicator.start();
+
           passwords.firstMatch(input.value).then(function (password) {
             password.getDetail().then(function (detail) {
               chrome.tabs.sendMessage(tab.id, {"fill": detail}, function () {
