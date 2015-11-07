@@ -11,5 +11,10 @@
     "default_title": "pass",
     "default_popup": "popup.html"
   },
+  "commands": {
+    "_execute_browser_action": {
+      "default": "Ctrl+Shift+P"
+    }
+  },
   "permissions": ["nativeMessaging"]
 }
