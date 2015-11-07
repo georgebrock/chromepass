@@ -1,7 +1,6 @@
 chrome.runtime.sendMessage(
   {source: "popup", action: "load"},
   function (response) {
-    console.log("HELLO!");
     var extra, dl, dd;
 
     document.getElementById("name").innerHTML = response.name;
