@@ -1,8 +1,8 @@
 function Pass() {
   this.app = "org.passwordstore.pass";
 }
-Pass.prototype.copyToClipboard = function (name) {
-  return this.send({"action": "copy", "name": name});
+Pass.prototype.getDetail = function (name) {
+  return this.send({"action": "detail", "name": name});
 };
 Pass.prototype.loadList = function () {
   if (this.loadListPromise === undefined) {
@@ -14,7 +14,11 @@ Pass.prototype.send = function (message) {
   var pass = this;
   return new Promise(function (resolve, reject) {
     chrome.runtime.sendNativeMessage(pass.app, message, function (response) {
-      resolve(response);
+      if (response === undefined) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(response);
+      }
     });
   });
 };
@@ -59,10 +63,10 @@ PasswordCollection.prototype.filter = function (query) {
     password.toggle(query);
   });
 }
-PasswordCollection.prototype.firstMatch = function (query) {
+PasswordCollection.prototype.firstMatch = function (query, callback) {
   for (var i = 0; i < this.items.length; i += 1) {
     if (this.items[i].match(query)) {
-      return this.items[i];
+      return callback(this.items[i]);
     }
   }
 }
@@ -80,27 +84,34 @@ URLParser.prototype.domain = function () {
 var pass = new Pass();
 pass.loadList().then(function (passwords) {
   chrome.tabs.getSelected(function (tab) {
-    var form, input, list, i, item, urlParts, host;
-    form = document.getElementById("form");
-    input = document.getElementById("password");
-    list = document.getElementById("password-options");
+    chrome.tabs.executeScript(tab.id, {"file": "content.js"}, function () {
+      var form, input, list, i, item, urlParts, host;
+      form = document.getElementById("form");
+      input = document.getElementById("password");
+      list = document.getElementById("password-options");
 
-    passwords = new PasswordCollection(passwords, list);
+      passwords = new PasswordCollection(passwords, list);
 
-    form.onsubmit = function () {
-      var password = passwords.firstMatch(input.value);
+      form.onsubmit = function () {
+        passwords.firstMatch(input.value, function (password) {
+          pass.getDetail(password.name)
+            .then(function (message) {
+              chrome.tabs.sendMessage(tab.id, {"fill": message}, function (response) {
+                window.close();
+              });
+            })
+            .catch(function (message) {
+            });
+        });
 
-      pass.copyToClipboard(password.name).then(function (message) {
-        window.close();
-      });
+        return false;
+      };
 
-      return false;
-    };
-
-    input.onkeyup = function () { passwords.filter(input.value); };
-    input.removeAttribute("disabled");
-    input.value = new URLParser(tab.url).domain();
-    input.focus();
-    passwords.filter(input.value);
+      input.onkeyup = function () { passwords.filter(input.value); };
+      input.removeAttribute("disabled");
+      input.value = new URLParser(tab.url).domain();
+      input.focus();
+      passwords.filter(input.value);
+    });
   });
 });

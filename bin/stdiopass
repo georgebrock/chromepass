@@ -79,16 +79,6 @@ class Password(object):
     def __init__(self, name):
         self.name = name
 
-    def copy(self):
-        """
-        Decrypts the password, and copies it to the clipboard.
-        """
-
-        subprocess.check_call(
-            [self.PASS_COMMAND, '-c', self.name],
-            env=ENV,
-        )
-
     @property
     def password(self):
         """
@@ -144,7 +134,7 @@ class MessageHandler(object):
         try:
             return getattr(self, 'handle_%s' % action)
         except AttributeError:
-            raise self.UnknownAction()
+            raise self.UnknownAction('Unknown action: %r' % action)
 
     def handle_list(self, message):
         return list(PasswordStore(prefix='www'))
@@ -157,24 +147,17 @@ class MessageHandler(object):
             'extra': password.extra_info,
         }
 
-    def handle_copy(self, message):
-        password = Password(message['name'])
-        password.copy()
-        return {'copy': True}
-
-
 if __name__ == '__main__':
     chrome = ChromeNativeMessaging()
     message_handler = MessageHandler()
 
-    while True:
-        try:
-            message = chrome.read()
-        except ChromeNativeMessaging.ConnectionClosed:
-            sys.exit(0)
+    try:
+        message = chrome.read()
+    except ChromeNativeMessaging.ConnectionClosed:
+        sys.exit(0)
 
-        try:
-            response = message_handler.handle(message)
-            chrome.write(response)
-        except Exception as e:
-            chrome.write({"error": unicode(e)})
+    try:
+        response = message_handler.handle(message)
+        chrome.write(response)
+    except Exception as e:
+        chrome.write({"error": unicode(e)})

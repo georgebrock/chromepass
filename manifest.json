@@ -12,5 +12,9 @@
       "default": "Ctrl+Shift+P"
     }
   },
-  "permissions": ["nativeMessaging", "tabs"]
+  "permissions": [
+    "nativeMessaging",
+    "tabs",
+    "activeTab"
+  ]
 }
