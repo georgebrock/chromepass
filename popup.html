@@ -3,11 +3,13 @@
   <head>
     <meta charset="utf-8">
     <title>pass</title>
+    <link type="text/css" rel="stylesheet" href="popup.css">
   </head>
   <body>
-    <h1>Pass</h1>
-    <h2 id="name">Loading</h2>
-    <dl id="extra"></dl>
+    <form id="form">
+      <input type="text" id="password" disabled autocomplete="off">
+      <ul id="password-options"></ul>
+    </form>
     <script src="popup.js"></script>
   </body>
 </html>

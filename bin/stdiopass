@@ -8,6 +8,11 @@ import subprocess
 import sys
 
 
+PATH = ':'.join(['/usr/local/bin', os.environ['PATH']])
+HOME = '/Users/georgebrocklehurst'
+ENV = {'PATH': PATH, 'HOME': HOME}
+
+
 class ChromeNativeMessaging(object):
     """
     Reads and writes the Google Chrome native messaging protocol, which
@@ -44,6 +49,24 @@ class ChromeNativeMessaging(object):
         sys.stdout.flush()
 
 
+def PasswordStore(prefix):
+    """
+    Generator that yields names of items in the password store.
+    """
+
+    extension = re.compile(r'\.gpg$')
+    path = os.path.join(HOME, '.password-store', prefix)
+
+    for name in os.listdir(path):
+        prefixed_name = os.path.join(prefix, name)
+
+        if os.path.isfile(os.path.join(path, name)):
+            yield extension.sub('', prefixed_name)
+        else:
+            for item in PasswordStore(prefix=prefixed_name):
+                yield item
+
+
 class Password(object):
     """
     Represents an entry in the password store. The entry will be lazily
@@ -51,12 +74,20 @@ class Password(object):
     accessed.
     """
 
-    @classmethod
-    def for_domain(cls, domain):
-        return cls('www/{0}'.format(domain))
+    PASS_COMMAND = '/usr/local/bin/pass'
 
     def __init__(self, name):
         self.name = name
+
+    def copy(self):
+        """
+        Decrypts the password, and copies it to the clipboard.
+        """
+
+        subprocess.check_call(
+            [self.PASS_COMMAND, '-c', self.name],
+            env=ENV,
+        )
 
     @property
     def password(self):
@@ -87,10 +118,9 @@ class Password(object):
     @property
     def decrypted_lines(self):
         if not hasattr(self, '_decrypted_lines'):
-            path = ':'.join(['/usr/local/bin', os.environ['PATH']])
             output = subprocess.check_output(
-                ['/usr/local/bin/pass', self.name],
-                env={'PATH': path, 'HOME': '/Users/georgebrocklehurst'},
+                [self.PASS_COMMAND, self.name],
+                env=ENV,
             )
             self._decrypted_lines = output.splitlines()
 
@@ -103,14 +133,34 @@ class MessageHandler(object):
     browser.
     """
 
+    class UnknownAction(Exception):
+        pass
+
     def handle(self, message):
-        domain = message['domain']
-        password = Password.for_domain(domain)
+        handler = self.handler(message.get('action'))
+        return handler(message)
+
+    def handler(self, action):
+        try:
+            return getattr(self, 'handle_%s' % action)
+        except AttributeError:
+            raise self.UnknownAction()
+
+    def handle_list(self, message):
+        return list(PasswordStore(prefix='www'))
+
+    def handle_detail(self, message):
+        password = Password(message['name'])
         return {
             'name': password.name,
             'password': password.password,
             'extra': password.extra_info,
         }
+
+    def handle_copy(self, message):
+        password = Password(message['name'])
+        password.copy()
+        return {'copy': True}
 
 
 if __name__ == '__main__':
@@ -127,4 +177,4 @@ if __name__ == '__main__':
             response = message_handler.handle(message)
             chrome.write(response)
         except Exception as e:
-            chrome.write({"error": repr(e)})
+            chrome.write({"error": unicode(e)})
