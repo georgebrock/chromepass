@@ -36,27 +36,10 @@ function Password(name, pass) {
 Password.prototype.getDetail = function () {
   return this.pass.getDetail(this.name);
 };
-Password.prototype.buildUI = function (parent) {
-    this.element = document.createElement("li");
-    this.element.setAttribute("data-password", this.name);
-    this.element.innerHTML = this.name;
-    parent.appendChild(this.element);
-};
-Password.prototype.toggle = function (query) {
-  if (this.match(query)) {
-    this.show();
-  } else {
-    this.hide();
-  }
-};
-Password.prototype.match = function (query) {
-  return this.name.indexOf(query) !== -1;
-};
-Password.prototype.show = function () {
-  this.element.removeAttribute("style");
-};
-Password.prototype.hide = function () {
-  this.element.setAttribute("style", "display: none");
+Password.prototype.buildUI = function () {
+  this.element = document.createElement("li");
+  this.element.setAttribute("data-password", this.name);
+  this.element.innerHTML = this.name;
 };
 
 
@@ -64,27 +47,30 @@ function PasswordCollection(names, pass) {
   this.items = names.map(function (name) {
     return new Password(name, pass);
   });
+  this.fuse = new Fuse(this.items, {"keys": ["name"]});
 }
-PasswordCollection.prototype.buildUI = function (parent) {
+PasswordCollection.prototype.buildUI = function (element) {
+  this.element = element;
   this.items.forEach(function (password) {
-    password.buildUI(parent);
+    password.buildUI();
   });
 };
 PasswordCollection.prototype.filter = function (query) {
-  this.items.forEach(function (password) {
-    password.toggle(query);
+  var collection = this;
+  this.element.innerHTML = "";
+  this.fuse.search(query).forEach(function (password) {
+    collection.element.appendChild(password.element);
   });
 };
 PasswordCollection.prototype.firstMatch = function (query) {
   var collection = this;
   return new Promise(function (resolve, reject) {
-    collection.items.forEach(function (password) {
-      if (password.match(query)) {
-        resolve(password);
-      }
-    });
-
-    reject();
+    var matches = collection.fuse.search(query);
+    if (matches.length > 0) {
+      resolve(matches[0]);
+    } else {
+      reject();
+    }
   });
 };
 
