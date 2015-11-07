@@ -5,8 +5,13 @@ Pass.prototype.getDetail = function (name) {
   return this.send({"action": "detail", "name": name});
 };
 Pass.prototype.loadList = function () {
+  var pass = this;
   if (this.loadListPromise === undefined) {
-    this.loadListPromise = this.send({"action": "list"});
+    this.loadListPromise = new Promise(function (resolve, reject) {
+      pass.send({"action": "list"})
+        .then(function (names) { resolve(new PasswordCollection(names, pass)); })
+        .catch(reject);
+    });
   }
   return this.loadListPromise;
 };
@@ -24,9 +29,13 @@ Pass.prototype.send = function (message) {
 };
 
 
-function Password(name) {
+function Password(name, pass) {
   this.name = name;
+  this.pass = pass;
 }
+Password.prototype.getDetail = function () {
+  return this.pass.getDetail(this.name);
+};
 Password.prototype.buildUI = function (parent) {
     this.element = document.createElement("li");
     this.element.setAttribute("data-password", this.name);
@@ -51,67 +60,75 @@ Password.prototype.hide = function () {
 };
 
 
-function PasswordCollection(names, parent) {
-    this.items = names.map(function (name) {
-      var password = new Password(name);
-      password.buildUI(parent);
-      return password;
-    });
+function PasswordCollection(names, pass) {
+  this.items = names.map(function (name) {
+    return new Password(name, pass);
+  });
 }
+PasswordCollection.prototype.buildUI = function (parent) {
+  this.items.forEach(function (password) {
+    password.buildUI(parent);
+  });
+};
 PasswordCollection.prototype.filter = function (query) {
   this.items.forEach(function (password) {
     password.toggle(query);
   });
-}
-PasswordCollection.prototype.firstMatch = function (query, callback) {
-  for (var i = 0; i < this.items.length; i += 1) {
-    if (this.items[i].match(query)) {
-      return callback(this.items[i]);
-    }
-  }
-}
+};
+PasswordCollection.prototype.firstMatch = function (query) {
+  var collection = this;
+  return new Promise(function (resolve, reject) {
+    collection.items.forEach(function (password) {
+      if (password.match(query)) {
+        resolve(password);
+      }
+    });
+
+    reject();
+  });
+};
 
 
 function URLParser(url) {
   this.url = url;
 }
 URLParser.prototype.domain = function () {
-  urlParts = new RegExp("^[a-z]+://([^/]+)", "i").exec(this.url);
+  var urlParts = new RegExp("^[a-z]+://([^/]+)", "i").exec(this.url);
   return urlParts[1].replace(/^www\./, "");
 };
 
 
-var pass = new Pass();
-pass.loadList().then(function (passwords) {
-  chrome.tabs.getSelected(function (tab) {
-    chrome.tabs.executeScript(tab.id, {"file": "content.js"}, function () {
-      var form, input, list, i, item, urlParts, host;
-      form = document.getElementById("form");
-      input = document.getElementById("password");
-      list = document.getElementById("password-options");
+(function () {
+  var form, input, list, pass;
 
-      passwords = new PasswordCollection(passwords, list);
+  form = document.getElementById("form");
+  input = document.getElementById("password");
+  list = document.getElementById("password-options");
+  pass = new Pass();
 
-      form.onsubmit = function () {
-        passwords.firstMatch(input.value, function (password) {
-          pass.getDetail(password.name)
-            .then(function (message) {
-              chrome.tabs.sendMessage(tab.id, {"fill": message}, function (response) {
+  pass.loadList().then(function (passwords) {
+    chrome.tabs.getSelected(function (tab) {
+      chrome.tabs.executeScript(tab.id, {"file": "content.js"}, function () {
+        passwords.buildUI(list);
+
+        form.onsubmit = function () {
+          passwords.firstMatch(input.value).then(function (password) {
+            password.getDetail().then(function (detail) {
+              chrome.tabs.sendMessage(tab.id, {"fill": detail}, function () {
                 window.close();
               });
-            })
-            .catch(function (message) {
             });
-        });
+          });
 
-        return false;
-      };
+          return false;
+        };
 
-      input.onkeyup = function () { passwords.filter(input.value); };
-      input.removeAttribute("disabled");
-      input.value = new URLParser(tab.url).domain();
-      input.focus();
-      passwords.filter(input.value);
+        input.onkeyup = function () { passwords.filter(input.value); };
+        input.removeAttribute("disabled");
+        input.value = new URLParser(tab.url).domain();
+        input.focus();
+        passwords.filter(input.value);
+      });
     });
   });
-});
+}());
