@@ -16,8 +16,14 @@ input {
   max-height: 40em;
   min-height: 1.5em;
   overflow: hidden;
-  padding: 0 1em;
+  padding: 0;
   width: 20em;
+}
+#password-options li {
+  padding: 0 1em;
+}
+#password-options li:first-of-type {
+  background: #fee;
 }
 
 body.loading {
