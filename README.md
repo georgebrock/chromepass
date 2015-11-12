@@ -28,11 +28,9 @@ A very hacky proof-of-concept for a Chrome extension for [`pass`][1].
 ## Assumptions
 
 * You have GPG agent, and a GUI pinentry program.
-* Your Web passwords are in a `www` subdirectory.
-* Your Web password files are named after the domains of the Web sites they
-  correspond to, e.g. `www/github.com` for your GitHub password.
-* If you have multiple accounts for a particular Web site, the domain is a
-  directory, e.g. `www/example.com/work` and `www/example.com/personal`.
+* The names of your Web password files contain the domains of the Web sites
+  they correspond to, e.g. `github.com` appears somewhere in the file name for
+  your GitHub password.
 * The first line of each password file contains the password.
 * Subsequent lines of password files contain `:` separated key/value pairs, for
   example a password file might look like this:

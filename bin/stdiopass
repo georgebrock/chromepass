@@ -49,7 +49,7 @@ class ChromeNativeMessaging(object):
         sys.stdout.flush()
 
 
-def PasswordStore(prefix):
+def PasswordStore(prefix=''):
     """
     Generator that yields names of items in the password store.
     """
@@ -58,13 +58,14 @@ def PasswordStore(prefix):
     path = os.path.join(HOME, '.password-store', prefix)
 
     for name in os.listdir(path):
-        prefixed_name = os.path.join(prefix, name)
+        if name[0] != '.':
+            prefixed_name = os.path.join(prefix, name)
 
-        if os.path.isfile(os.path.join(path, name)):
-            yield extension.sub('', prefixed_name)
-        else:
-            for item in PasswordStore(prefix=prefixed_name):
-                yield item
+            if os.path.isfile(os.path.join(path, name)):
+                yield extension.sub('', prefixed_name)
+            else:
+                for item in PasswordStore(prefix=prefixed_name):
+                    yield item
 
 
 class Password(object):
@@ -137,7 +138,7 @@ class MessageHandler(object):
             raise self.UnknownAction('Unknown action: %r' % action)
 
     def handle_list(self, message):
-        return list(PasswordStore(prefix='www'))
+        return list(PasswordStore())
 
     def handle_detail(self, message):
         password = Password(message['name'])
