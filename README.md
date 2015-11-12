@@ -32,12 +32,6 @@ A very hacky proof-of-concept for a Chrome extension for [`pass`][1].
   they correspond to, e.g. `github.com` appears somewhere in the file name for
   your GitHub password.
 * The first line of each password file contains the password.
-* Subsequent lines of password files contain `:` separated key/value pairs, for
-  example a password file might look like this:
-
-       super-secret-password-123
-       username: georgebrock
-       email: george@example.com
 
 ## Usage
 

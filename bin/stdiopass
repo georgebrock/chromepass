@@ -71,8 +71,7 @@ def PasswordStore(prefix=''):
 class Password(object):
     """
     Represents an entry in the password store. The entry will be lazily
-    decrypted when the ``password`` or ``extra_info`` properties are
-    accessed.
+    decrypted when the ``password`` property is accessed.
     """
 
     PASS_COMMAND = '/usr/local/bin/pass'
@@ -88,23 +87,6 @@ class Password(object):
         """
 
         return self.decrypted_lines[0]
-
-    @property
-    def extra_info(self):
-        """
-        Returns a dict of extra information in the password file, assumed to
-        consist of colon separated key/value pairs on every line but the first.
-
-        e.g. the line ``'foo: bar'`` would result in the
-        dict ``{'foo': 'bar'}``
-        """
-
-        separator = re.compile(r':\s+')
-        return dict([
-            separator.split(line, maxsplit=2)
-            for line in self.decrypted_lines[1:]
-            if len(line) > 0
-        ])
 
     @property
     def decrypted_lines(self):
@@ -145,7 +127,6 @@ class MessageHandler(object):
         return {
             'name': password.name,
             'password': password.password,
-            'extra': password.extra_info,
         }
 
 if __name__ == '__main__':
