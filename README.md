@@ -5,7 +5,7 @@ A very hacky proof-of-concept for a Chrome extension for [`pass`][1].
 [1]: http://www.passwordstore.org/
 
 
-## Usage
+## Installation
 
 1. Clone this repo.
 2. Edit the `path` in `org.passwordstore.pass.json`. It should point to the
@@ -23,3 +23,28 @@ A very hacky proof-of-concept for a Chrome extension for [`pass`][1].
 
 
 [2]: https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-location
+
+
+## Assumptions
+
+* You have GPG agent, and a GUI pinentry program.
+* Your Web passwords are in a `www` subdirectory.
+* Your Web password files are named after the domains of the Web sites they
+  correspond to, e.g. `www/github.com` for your GitHub password.
+* If you have multiple accounts for a particular Web site, the domain is a
+  directory, e.g. `www/example.com/work` and `www/example.com/personal`.
+* The first line of each password file contains the password.
+* Subsequent lines of password files contain `:` separated key/value pairs, for
+  example a password file might look like this:
+
+       super-secret-password-123
+       username: georgebrock
+       email: george@example.com
+
+## Usage
+
+1. Visit a Web site you want to log in to.
+2. Focus on the password field.
+3. Trigger the extension by clicking on the toolbar icon.
+4. Click on the password you want to fill (or press return)
+5. The password will be filled.
