@@ -47,7 +47,7 @@ function PasswordCollection(names, pass) {
   this.items = names.map(function (name) {
     return new Password(name, pass);
   });
-  this.fuse = new Fuse(this.items, {"keys": ["name"]});
+  this.fuse = new Fuse(this.items, {"keys": ["name"], "searchFn": Pick});
 }
 PasswordCollection.prototype.buildUI = function (element) {
   this.element = element;
