@@ -33,9 +33,6 @@ function Password(name, pass) {
   this.name = name;
   this.pass = pass;
 }
-Password.prototype.getDetail = function () {
-  return this.pass.getDetail(this.name);
-};
 Password.prototype.buildUI = function () {
   this.element = document.createElement("li");
   this.element.setAttribute("data-password", this.name);

@@ -12,6 +12,10 @@
       "default": "Ctrl+Shift+P"
     }
   },
+  "background": {
+    "scripts": ["pass.js", "background.js"],
+    "persistent": false
+  },
   "permissions": [
     "nativeMessaging",
     "tabs",

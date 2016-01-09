@@ -27,35 +27,32 @@ LoadingIndicator.prototype.stop = function () {
 
   pass.loadList().then(function (passwords) {
     chrome.tabs.getSelected(function (tab) {
-      chrome.tabs.executeScript(tab.id, {"file": "content.js"}, function () {
-        function select(password) {
-          loadingIndicator.start();
-          password.getDetail().then(function (detail) {
-            chrome.tabs.sendMessage(tab.id, {"fill": detail}, function () {
-              window.close();
-            });
-          });
-        }
+      function select(password) {
+        loadingIndicator.start();
+        chrome.runtime.sendMessage(
+          {"tab": tab.id, "password": password.name},
+          function () { window.close(); }
+        );
+      }
 
-        passwords.buildUI(list);
+      passwords.buildUI(list);
 
-        form.onsubmit = function () {
-          passwords.firstMatch(input.value).then(select);
-          return false;
-        };
+      form.onsubmit = function () {
+        passwords.firstMatch(input.value).then(select);
+        return false;
+      };
 
-        list.onclick = function (event) {
-          var name = event.srcElement.getAttribute("data-password");
-          passwords.byName(name).then(select);
-          return false;
-        };
+      list.onclick = function (event) {
+        var name = event.srcElement.getAttribute("data-password");
+        passwords.byName(name).then(select);
+        return false;
+      };
 
-        input.onkeyup = function () { passwords.filter(input.value); };
-        input.removeAttribute("disabled");
-        input.value = new URLParser(tab.url).domain();
-        input.focus();
-        passwords.filter(input.value);
-      });
+      input.onkeyup = function () { passwords.filter(input.value); };
+      input.removeAttribute("disabled");
+      input.value = new URLParser(tab.url).domain();
+      input.focus();
+      passwords.filter(input.value);
     });
   });
 }());
