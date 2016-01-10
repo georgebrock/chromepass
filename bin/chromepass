@@ -7,10 +7,12 @@ import struct
 import subprocess
 import sys
 
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(1, parent_dir)
+import settings
 
-PATH = ':'.join(['/usr/local/bin', os.environ['PATH']])
-HOME = '/Users/georgebrocklehurst'
-ENV = {'PATH': PATH, 'HOME': HOME}
+
+ENV = {'PATH': settings.PATH, 'HOME': settings.HOME}
 
 
 class ChromeNativeMessaging(object):
@@ -55,7 +57,7 @@ def PasswordStore(prefix=''):
     """
 
     extension = re.compile(r'\.gpg$')
-    path = os.path.join(HOME, '.password-store', prefix)
+    path = os.path.join(settings.HOME, '.password-store', prefix)
 
     for name in os.listdir(path):
         if name[0] != '.':
