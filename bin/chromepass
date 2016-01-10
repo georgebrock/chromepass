@@ -74,7 +74,7 @@ class Password(object):
     decrypted when the ``password`` property is accessed.
     """
 
-    PASS_COMMAND = '/usr/local/bin/pass'
+    PASS_COMMAND = 'pass'
 
     def __init__(self, name):
         self.name = name
