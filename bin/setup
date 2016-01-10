@@ -2,7 +2,22 @@
 
 root="$(cd "$(dirname "$0")/.."; pwd)"
 
+# Build Python settings file
 echo "PATH = '$PATH'" > "$root/settings.py"
 echo "HOME = '$HOME'" >> "$root/settings.py"
 
+# Build Chrome native messaging host definition
 sed "s|@PATH@|$root/bin/chromepass|" "$root/org.passwordstore.pass.json.in" > "$root/org.passwordstore.pass.json"
+
+# Install native messaging host definition
+install_native_messaging_host () {
+  if [ -d "$(dirname "$1")" ]; then
+    mkdir -p "$1"
+    ln -s "$root/org.passwordstore.pass.json" "$1/org.passwordstore.pass.json"
+  fi
+}
+
+install_native_messaging_host "$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
+install_native_messaging_host "$HOME/Library/Application Support/Chromium/NativeMessagingHosts"
+install_native_messaging_host "$HOME/.config/google-chrome/native-messaging-hosts"
+install_native_messaging_host "$HOME/.config/chromium/native-messaging-hosts"

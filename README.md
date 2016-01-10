@@ -8,17 +8,12 @@ A very hacky proof-of-concept for a Chrome extension for [`pass`][1].
 ## Installation
 
 1. Clone this repo.
-2. Run `bin/setup` to generate custom settings files.
-3. Sym-link `org.passwordstore.pass.json` into the right directory for Chrome
-   native messaging hosts. This will vary from OS to OS, see the
-   [Chrome native messaging documentation][2] for details.
-4. Visit `chrome://extensions`
-5. Enable developer mode.
-6. Click "Load unpacked extension", and select the directory for this repo.
-7. Profit.
-
-
-[2]: https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-location
+2. Run `bin/setup` to generate custom settings files, and add symlinks in the
+   right places.
+3. Visit `chrome://extensions`
+4. Enable developer mode.
+5. Click "Load unpacked extension", and select the directory for this repo.
+6. Profit.
 
 
 ## Assumptions
