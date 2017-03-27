@@ -34,9 +34,8 @@ function Password(name, pass) {
   this.pass = pass;
 }
 Password.prototype.buildUI = function () {
-  this.element = document.createElement("li");
-  this.element.setAttribute("data-password", this.name);
-  this.element.innerHTML = this.name;
+  this.element = document.createElement("option");
+  this.element.setAttribute("value", this.name);
 };
 
 
@@ -44,12 +43,13 @@ function PasswordCollection(names, pass) {
   this.items = names.map(function (name) {
     return new Password(name, pass);
   });
-  this.fuse = new Fuse(this.items, {"keys": ["name"], "searchFn": Pick});
 }
 PasswordCollection.prototype.buildUI = function (element) {
+  var collection = this;
   this.element = element;
   this.items.forEach(function (password) {
     password.buildUI();
+    collection.element.appendChild(password.element);
   });
 };
 PasswordCollection.prototype.byName = function (name) {
@@ -61,23 +61,5 @@ PasswordCollection.prototype.byName = function (name) {
       }
     });
     reject();
-  });
-};
-PasswordCollection.prototype.filter = function (query) {
-  var collection = this;
-  this.element.innerHTML = "";
-  this.fuse.search(query).forEach(function (password) {
-    collection.element.appendChild(password.element);
-  });
-};
-PasswordCollection.prototype.firstMatch = function (query) {
-  var collection = this;
-  return new Promise(function (resolve, reject) {
-    var matches = collection.fuse.search(query);
-    if (matches.length > 0) {
-      resolve(matches[0]);
-    } else {
-      reject();
-    }
   });
 };

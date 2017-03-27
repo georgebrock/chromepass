@@ -38,21 +38,13 @@ LoadingIndicator.prototype.stop = function () {
       passwords.buildUI(list);
 
       form.onsubmit = function () {
-        passwords.firstMatch(input.value).then(select);
+        passwords.byName(input.value).then(select);
         return false;
       };
 
-      list.onclick = function (event) {
-        var name = event.srcElement.getAttribute("data-password");
-        passwords.byName(name).then(select);
-        return false;
-      };
-
-      input.onkeyup = function () { passwords.filter(input.value); };
       input.removeAttribute("disabled");
       input.value = new URLParser(tab.url).domain();
       input.focus();
-      passwords.filter(input.value);
     });
   });
 }());

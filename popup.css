@@ -3,32 +3,17 @@ html, body {
   padding: 0;
 }
 
+form {
+  line-height: 1.5;
+  height: 1.5em;
+  padding: 0;
+  width: 20em;
+}
+
 input {
   box-sizing: border-box;
   padding: 1em 1em;
   width: 100%;
-}
-
-#password-options {
-  line-height: 1.5;
-  list-style: none;
-  margin: 1em 0;
-  max-height: 40em;
-  min-height: 1.5em;
-  overflow: hidden;
-  padding: 0;
-  width: 20em;
-}
-#password-options li {
-  cursor: pointer;
-  padding: 0 1em;
-}
-#password-options:hover li:first-of-type {
-  background: inherit;
-}
-#password-options li:first-of-type,
-#password-options:hover li:hover {
-  background: #fee;
 }
 
 body.loading {
