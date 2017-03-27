@@ -9,7 +9,7 @@ Pass.prototype.loadList = function () {
   if (this.loadListPromise === undefined) {
     this.loadListPromise = new Promise(function (resolve, reject) {
       pass.send({"action": "list"})
-        .then(function (names) { resolve(new PasswordCollection(names, pass)); })
+        .then(function (names) { resolve(new PasswordCollection(names)); })
         .catch(reject);
     });
   }
@@ -29,9 +29,8 @@ Pass.prototype.send = function (message) {
 };
 
 
-function Password(name, pass) {
+function Password(name) {
   this.name = name;
-  this.pass = pass;
 }
 Password.prototype.buildUI = function () {
   this.element = document.createElement("option");
@@ -39,9 +38,9 @@ Password.prototype.buildUI = function () {
 };
 
 
-function PasswordCollection(names, pass) {
+function PasswordCollection(names) {
   this.items = names.map(function (name) {
-    return new Password(name, pass);
+    return new Password(name);
   });
 }
 PasswordCollection.prototype.buildUI = function (element) {
